@@ -88,13 +88,13 @@ Fully responsive and mobile-friendly design that works on:
 
 No user data is collected or stored. All processing happens client-side.
 
-## 📄 License
+<!-- ## 📄 License
 
-[Specify your license here, e.g., MIT License]
+[Specify your license here, e.g., MIT License] -->
 
-## 🌈 Screenshots
+<!-- ## 🌈 Screenshots
 
-[Add screenshots of the application]
+[Add screenshots of the application] -->
 
 ## 👥 Authors
 
