@@ -104,7 +104,7 @@ RAHUL PAL
 ## 🖼️ Demo
 
 ### 🔗 Live Demo
-
+https://goldlion123rp.github.io/Smart-Health-Adviser/
 ---
 
 **Stay Healthy! 💪🏥**
