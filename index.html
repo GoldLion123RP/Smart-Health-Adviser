@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Health Adviser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .symptoms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .symptom-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .symptom-card:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .symptom-card.selected {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .symptom-card input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            pointer-events: none; /* Prevents direct interaction */
+            accent-color: #667eea;
+        }
+
+        .symptom-card.selected input[type="checkbox"] {
+            accent-color: white;
+        }
+
+        .symptom-card label {
+            cursor: pointer;
+            font-size: 1em;
+            flex: 1;
+            pointer-events: none; /* Prevents label from interfering */
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .reset-btn {
+            background: #6c757d;
+        }
+
+        .reset-btn:hover {
+            background: #5a6268;
+        }
+
+        .result {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .result h3 {
+            color: #495057;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+
+        .result ul {
+            list-style-position: inside;
+            color: #495057;
+            line-height: 1.8;
+        }
+
+        .result ul li {
+            margin-bottom: 8px;
+        }
+
+        .emoji {
+            font-size: 2em;
+            margin-right: 10px;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+
+        .danger {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .symptoms-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .symptom-card {
+                padding: 18px;
+                min-height: 60px;
+            }
+
+            .btn-container {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Smart Health Adviser</h1>
+        <p class="subtitle">Tap on symptoms to select them</p>
+
+        <div class="symptoms-grid" id="symptomsGrid">
+            <div class="symptom-card" data-symptom="fever">
+                <input type="checkbox" id="fever" value="fever">
+                <label>🌡️ Fever</label>
+            </div>
+            <div class="symptom-card" data-symptom="cough">
+                <input type="checkbox" id="cough" value="cough">
+                <label>😷 Cough</label>
+            </div>
+            <div class="symptom-card" data-symptom="cold">
+                <input type="checkbox" id="cold" value="cold">
+                <label>🤧 Cold</label>
+            </div>
+            <div class="symptom-card" data-symptom="headache">
+                <input type="checkbox" id="headache" value="headache">
+                <label>🤕 Headache</label>
+            </div>
+            <div class="symptom-card" data-symptom="rash">
+                <input type="checkbox" id="rash" value="rash">
+                <label>🔴 Rash</label>
+            </div>
+            <div class="symptom-card" data-symptom="sneeze">
+                <input type="checkbox" id="sneeze" value="sneeze">
+                <label>🤧 Sneezing</label>
+            </div>
+            <div class="symptom-card" data-symptom="breath">
+                <input type="checkbox" id="breath" value="breath">
+                <label>🫁 Breathing Problem</label>
+            </div>
+            <div class="symptom-card" data-symptom="bodypain">
+                <input type="checkbox" id="bodypain" value="body pain">
+                <label>💪 Body Pain</label>
+            </div>
+            <div class="symptom-card" data-symptom="chills">
+                <input type="checkbox" id="chills" value="chills">
+                <label>🥶 Chills</label>
+            </div>
+            <div class="symptom-card" data-symptom="throat">
+                <input type="checkbox" id="throat" value="throat">
+                <label>😣 Throat Pain</label>
+            </div>
+            <div class="symptom-card" data-symptom="itch">
+                <input type="checkbox" id="itch" value="itch">
+                <label>🔴 Itching</label>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <button onclick="diagnose()">🔍 Get Health Advice</button>
+            <button class="reset-btn" onclick="resetForm()">🔄 Reset</button>
+        </div>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // Improved symptom selection for mobile
+        document.querySelectorAll('.symptom-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                e.preventDefault();
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+                this.classList.toggle('selected');
+            });
+        });
+
+        function resetForm() {
+            document.querySelectorAll('.symptom-card').forEach(card => {
+                card.classList.remove('selected');
+                card.querySelector('input').checked = false;
+            });
+            document.getElementById('result').classList.remove('show');
+            document.getElementById('result').innerHTML = '';
+        }
+
+        function diagnose() {
+            const selectedSymptoms = [];
+            document.querySelectorAll('.symptom-card input:checked').forEach(input => {
+                selectedSymptoms.push(input.value);
+            });
+
+            if (selectedSymptoms.length === 0) {
+                alert('⚠️ Please select at least one symptom!');
+                return;
+            }
+
+            const symptoms = selectedSymptoms.join(', ');
+            let diagnosis = '';
+            let resultClass = 'info';
+
+            // Dengue (specific combination - check first)
+            if (symptoms.includes('fever') && symptoms.includes('rash')) {
+                resultClass = 'danger';
+                diagnosis = `
+                    <h2><span class="emoji">🦟</span>You might have Dengue Fever</h2>
+                    <h3>Advice:</h3>
+                    <ul>
+                        <li>Drink plenty of fluids and take rest.</li>
+                        <li>Drink papaya leaf juice to improve platelet count.</li>
+                        <li>Avoid aspirin or ibuprofen.</li>
+                        <li>See a doctor immediately if rashes or fever worsen.</li>
+                    </ul>
+                `;
+            }
+            // Malaria
+            else if (symptoms.includes('fever') && symptoms.includes('chills')) {
+                resultClass = 'danger';
+                diagnosis = `
+                    <h2><span class="emoji">🌿</span>You might have Malaria</h2>
+                    <h3>Advice:</h3>
+                    <ul>
+                        <li>Take antimalarial medicine as prescribed.</li>
+                        <li>Sleep under mosquito nets and prevent mosquito bites.</li>
+                        <li>Keep surroundings clean and free from stagnant water.</li>
+                        <li>Visit a doctor immediately.</li>
+                    </ul>
+                `;
+            }
+            // Flu
+            else if (symptoms.includes('fever') && symptoms.includes('body pain')) {
+                resultClass = 'warning';
+                diagnosis = `
+                    <h2><span class="emoji">🤒</span>You might have Flu</h2>
+                    <h3>Advice:</h3>
+                    <ul>
+                        <li>Take plenty of fluids and rest.</li>
+                        <li>Eat food rich in vitamin C (like oranges).</li>
+                        <li>Use mild pain relievers if needed.</li>
+                        <li>Consult a doctor if fever is high or persistent.</li>
+                    </ul>
+                `;
+            }
+            // COVID-19 or respiratory infection
+            else if (symptoms.includes('cough') && symptoms.includes('breath')) {
+                resultClass = 'danger';
+                diagnosis = `
+                    <h2><span class="emoji">🫁</span>You might have COVID-19 or a respiratory infection</h2>
+                    <h3>Advice:</h3>
+                    <ul>
+                        <li>Isolate yourself and wear a mask.</li>
+                        <li>Monitor oxygen levels and temperature.</li>
+                        <li>Stay hydrated and rest.</li>
+                        <li>Seek medical help if breathing difficulty increases.</li>
+                    </ul>
+                `;
+            }
+            // Cough with throat issues
+            else if ((symptoms.includes('cough') && symptoms.includes('throat')) || symptoms.includes('dry cough')) {
+                resultClass = 'warning';
+                diagnosis = `
+                    <h2><span class="emoji">😷</span>You might have Cough or Throat Infection</h2>
+                    <h3>Advice:</h3>
+                    <ul>
+                        <li>Drink warm water and honey-lemon tea.</li>
+                        <li>Avoid dust, smoke, and cold drinks.</li>
+                        <li>Gargle with warm salt water.</li>
+                        <li>Visit a doctor if it lasts more than a week.</li>
+                    </ul>
+                `;
+            }
+            // Cold or sneezing
+            else if (symptoms.includes('cold') || symptoms.includes('sneeze')) {
+                resultClass = 'info';
+                diagnosis = `
+                    <h2><span class="emoji">☃️</span>You might have a Common Cold</h2>
+                    <h3>Advice:</h3>
+                    <ul>
+                        <li>Drink warm water and rest well.</li>
+                        <li>Take steam inhalation to relieve congestion.</li>
+                        <li>Avoid cold food and drinks.</li>
+                        <li>If symptoms last more than 3 days, consult a doctor.</li>
+                    </ul>
+                `;
+            }
+            // Allergy
+            else if (symptoms.includes('itch') || symptoms.includes('rash')) {
+                resultClass = 'warning';
+                diagnosis = `
+                    <h2><span class="emoji">🤧</span>You might have an Allergy</h2>
+                    <h3>Advice:</h3>
+                    <ul>
+                        <li>Avoid known triggers (dust, pollen, pets, etc.).</li>
+                        <li>Keep your room clean and dust-free.</li>
+                        <li>Take antihistamines if prescribed.</li>
+                        <li>Visit a doctor if symptoms persist.</li>
+                    </ul>
+                `;
+            }
+            // General Fever
+            else if (symptoms.includes('fever')) {
+                resultClass = 'warning';
+                diagnosis = `
+                    <h2><span class="emoji">🌡️</span>You have a Fever</h2>
+                    <h3>Advice:</h3>
+                    <ul>
+                        <li>Take rest and drink plenty of fluids.</li>
+                        <li>Monitor your temperature regularly.</li>
+                        <li>Take paracetamol if fever is high.</li>
+                        <li>Consult a doctor if fever persists for more than 2 days.</li>
+                    </ul>
+                `;
+            }
+            // General Cough
+            else if (symptoms.includes('cough')) {
+                resultClass = 'info';
+                diagnosis = `
+                    <h2><span class="emoji">😷</span>You have a Cough</h2>
+                    <h3>Advice:</h3>
+                    <ul>
+                        <li>Drink warm water and honey-lemon tea.</li>
+                        <li>Avoid dust, smoke, and cold drinks.</li>
+                        <li>Take cough syrup if needed.</li>
+                        <li>Visit a doctor if it lasts more than a week.</li>
+                    </ul>
+                `;
+            }
+            // Headache
+            else if (symptoms.includes('headache')) {
+                resultClass = 'info';
+                diagnosis = `
+                    <h2><span class="emoji">🤕</span>You have a Headache</h2>
+                    <h3>Advice:</h3>
+                    <ul>
+                        <li>Rest in a quiet, dark room.</li>
+                        <li>Drink water and stay hydrated.</li>
+                        <li>Take mild pain relievers if needed.</li>
+                        <li>Consult a doctor if headache is severe or persistent.</li>
+                    </ul>
+                `;
+            }
+            // Breathing problem
+            else if (symptoms.includes('breath')) {
+                resultClass = 'danger';
+                diagnosis = `
+                    <h2><span class="emoji">🫁</span>You have Breathing Problems</h2>
+                    <h3>Advice:</h3>
+                    <ul>
+                        <li>Sit in a comfortable position and try to breathe slowly.</li>
+                        <li>Avoid smoke, dust, and pollutants.</li>
+                        <li>Use an inhaler if you have asthma.</li>
+                        <li>Seek immediate medical help if difficulty persists.</li>
+                    </ul>
+                `;
+            }
+            // Body pain
+            else if (symptoms.includes('body pain')) {
+                resultClass = 'info';
+                diagnosis = `
+                    <h2><span class="emoji">💪</span>You have Body Pain</h2>
+                    <h3>Advice:</h3>
+                    <ul>
+                        <li>Take rest and avoid strenuous activities.</li>
+                        <li>Apply warm compress to affected areas.</li>
+                        <li>Take mild pain relievers if needed.</li>
+                        <li>Consult a doctor if pain is severe or persistent.</li>
+                    </ul>
+                `;
+            }
+            else {
+                resultClass = 'warning';
+                diagnosis = `
+                    <h2><span class="emoji">❌</span>Unable to identify a condition</h2>
+                    <p>Based on the given symptoms, we cannot determine a specific condition.</p>
+                    <p><strong>Please consult a doctor for a proper diagnosis.</strong></p>
+                `;
+            }
+
+            diagnosis += '<p style="margin-top: 20px; font-weight: 600;">Stay Healthy! 💪</p>';
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result show ' + resultClass;
+            resultDiv.innerHTML = diagnosis;
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
